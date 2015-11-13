@@ -6,6 +6,7 @@ __author__ = 'Trent'
 class JSONLoader:
     def __init__(self, filename):
         self.data = []
+        self.currentReview = 0
         with open(filename) as file:
             ticker = 0
             self.reviews = []
@@ -27,10 +28,17 @@ class JSONLoader:
             useful = review['votes']['useful']
             # need to decide what other information is interesting to us
 
-            self.data.append([text, stars, useful])
+            self.data.append([id, text, stars, useful])
 
-    def getReview(self):
-        return self.data.pop(0)
+    def get_next_review(self):
+        out = self.data[self.currentReview]
+        self.currentReview += 1
+        if self.currentReview >= len(self.data):
+            return None
+        return out
+
+    def get_all_reviews(self):
+        return self.data
 
 
 def main():
