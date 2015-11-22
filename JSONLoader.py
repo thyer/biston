@@ -13,10 +13,12 @@ class JSONLoader:
             for line in file:
                 self.reviews.append(json.loads(line))
                 ticker += 1
-                if ticker % 10000 == 0:
+                if ticker % 10000 == 0: # helps break up large files to keep memory requirements down
                     print(str(ticker) + " lines processed")
                     self.process()
                     self.reviews = []
+        self.process()
+        self.reviews = []
 
     def process(self):
         for review in self.reviews:
