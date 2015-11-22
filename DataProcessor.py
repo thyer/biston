@@ -5,9 +5,8 @@ __author__ = 'Trent'
 
 class DataProcessor:
     def __init__(self, json_loader=None):
-        print("in constructor")
         if json_loader is None:
-            json_loader = JSONLoader("testing.json")
+            json_loader = JSONLoader("bad_testing.json")
         self.json_loader = json_loader
         self.data = []
 
@@ -23,6 +22,7 @@ class DataProcessor:
         item.text = review[1]
         item.stars = review[2]
         item.usefulness = review[3]
+        # TODO: implement all of these methods
         item.alpha_ratio = self.calc_alpha_ratio(item.text)
         item.punctuation_frequency = self.calc_punct_frequency(item.text)
         item.obfuscation = self.calc_obfuscation(item.text)
@@ -33,7 +33,6 @@ class DataProcessor:
         item.char_count = len(item.text)
         item.word_count = self.calc_word_count(item.text)
         self.data.append(item)
-        print(str(item.alpha_ratio))
 
     def calc_alpha_ratio(self, text):
         alpha = 0

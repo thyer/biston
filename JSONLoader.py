@@ -1,4 +1,5 @@
 import json
+import sys
 
 __author__ = 'Trent'
 
@@ -21,7 +22,22 @@ class JSONLoader:
         self.reviews = []
 
     def process(self):
+        print("Processing")
+        error = ""
         for review in self.reviews:
+            if 'review_id' not in review:
+                error += " review_id, "
+            if 'text' not in review:
+                error += "text, "
+            if 'stars' not in review:
+                error += "stars, "
+            if 'votes' not in review or 'useful' not in review['votes']:
+                error += "votes/useful "
+            if error is not "":
+                error = "The fields " + error + " etc. were missing from the review: "
+                error += "\n" + str(review)
+                sys.exit(error)
+
             id = review['review_id']
             text = review['text']
             stars = review['stars']
@@ -31,10 +47,10 @@ class JSONLoader:
             self.data.append([id, text, stars, useful])
 
     def get_next_review(self):
-        out = self.data[self.currentReview]
-        self.currentReview += 1
         if self.currentReview >= len(self.data):
             return None
+        out = self.data[self.currentReview]
+        self.currentReview += 1
         return out
 
     def get_all_reviews(self):
