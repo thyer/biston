@@ -15,7 +15,7 @@ class DataProcessor:
             self.process(next_review)
 
     def process(self, review):
-        # here we'll want to actually do the processing and add features
+        print(review)
         self.data.append(review)
 
     def reload_json(self, json_loader):

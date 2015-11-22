@@ -11,8 +11,6 @@ class JSONLoader:
             ticker = 0
             self.reviews = []
             for line in file:
-                if ticker % 100000 == 0:
-                    print(line)
                 self.reviews.append(json.loads(line))
                 ticker += 1
                 if ticker % 10000 == 0:
@@ -42,7 +40,7 @@ class JSONLoader:
 
 
 def main():
-    js = JSONLoader("yelp_academic_dataset_review.json")
+    js = JSONLoader("testing.json")
     print("done")
 
 if __name__ == '__main__':
