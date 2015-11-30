@@ -8,7 +8,7 @@ import re
 class DataProcessor:
     def __init__(self, json_loader=None):
         if json_loader is None:
-            json_loader = JSONLoader("bad_testing.json")
+            json_loader = JSONLoader("testing.json")
         self.json_loader = json_loader
         self.data = []
 
@@ -27,7 +27,7 @@ class DataProcessor:
         # TODO: implement all of these methods
         item.alpha_ratio = self.calc_alpha_ratio(item.text)
         item.punctuation_frequency = self.calc_punct_frequency(item.text)
-        item.obfuscation = self.calc_obfuscation(item.text)
+        # item.obfuscation = self.calc_obfuscation(item.text)
         item.numerals = self.calc_numerals(item.text)
         item.superlative_comparative = self.calc_superlatives(item.text)
         item.function_word_rate = self.calc_func_word_rate(item.text)
@@ -47,98 +47,99 @@ class DataProcessor:
 
     def calc_punct_frequency(self, text):
         # try looking at string.punctuation here
-		
-		punctuationCount = 0
-		
-		for char in text:
-			if char in "(),.!?--;{}[]<>:":
-				punctuationCount += 1
-		
-        return len(punctuationCount)
+        
+        punctuation_count = 0
+        char_count = 0
+        
+        for char in text:
+            char_count += 1
+            if char in "(),.!?--;{}[]<>:\'\"":
+                punctuation_count += 1
+        
+        return punctuation_count/char_count
 
     def calc_obfuscation(self, text):
         # not sure what we want here
-		#I think here we need to define some boundaries of "easy difficulty", "moderate difficulty", "high difficulty" in terms of readability
-		#My guess is this will take into account things like sentence length, word length, punctuation, multiple negatives.
-		multiNegCount = 0
-		avgSentenceLength = 0
-		avgWordLength = 0
-		
-		#Check for multiple negatives in the text, and simultaneously compute average word length
-		index = 0
-		wordLengthSum = 0
-		
-		textWords = re.sub ("\.|\;|\,|\--|\:|\?|\!|\(|\)|\{|\}|\[|\]", "", text)
-		textWords = textWords.split()
-		
-		
-		while index < len(textWords) - 1:
-			
-			wordLengthSum += len(textWords[index])
-			
-			if ("n't" in textWords[index] and textWords[index + 1].lower() == "not") || ("not" == textWords[index].lower() and "n't" in textWords[index+1]):
-				multiNegCount += 1
-					
-			index += 1
-			
-		avgWordLength = ((wordLengthSum * 1.0) / len(textWords))
-			
-		
-		
-		#Split the text at the .'s in order to separate into sentences
-		sentenceSplitText = text.split(".")
-		sentenceSplitText = sentenceSplitText.split(";")
-		sentenceSplitText = sentenceSplitText.split(", and ")
-		sententeSplitText = sentenceSplitText.split(", but ")
-		sentenceCount = 1
-		
-		#If sentences exist (i.e. text is NOT empty), then proceed with processing
-		if len(sentenceSplitText) > 0:
-			
-			sentenceLengthSum = 0
-			
-			for sentence in sentenceSplitText:
-				sentenceLengthSum += len(sentence)
-				
-				sentenceCount += 1
-				
-			avgSentenceLength = ((sentenceLengthSum * 1.0) / sentenceCount)
-			
-			
+        # I think here we need to define some boundaries of "easy difficulty", "moderate difficulty", "high difficulty" in terms of readability
+        # My guess is this will take into account things like sentence length, word length, punctuation, multiple negatives.
+        multiNegCount = 0
+        avgSentenceLength = 0
+        avgWordLength = 0
+        
+        # Check for multiple negatives in the text, and simultaneously compute average word length
+        index = 0
+        wordLengthSum = 0
+        
+        textWords = re.sub ("\.|\;|\,|\--|\:|\?|\!|\(|\)|\{|\}|\[|\]", "", text)
+        textWords = textWords.split()
+        
+        
+        while index < len(textWords) - 1:
+            wordLengthSum += len(textWords[index])
+            
+            if ("n't" in textWords[index] and textWords[index + 1].lower() == "not") or ("not" == textWords[index].lower() and "n't" in textWords[index+1]):
+                multiNegCount += 1
+                    
+            index += 1
+            
+        avgWordLength = ((wordLengthSum * 1.0) / len(textWords))
+            
+        
+        
+        # Split the text at the .'s in order to separate into sentences
+        sentenceSplitText = text.split(".")
+        sentenceSplitText = sentenceSplitText.split(";")
+        sentenceSplitText = sentenceSplitText.split(", and ")
+        sententeSplitText = sentenceSplitText.split(", but ")
+        sentenceCount = 1
+        
+        # If sentences exist (i.e. text is NOT empty), then proceed with processing
+        if len(sentenceSplitText) > 0:
+            
+            sentenceLengthSum = 0
+            
+            for sentence in sentenceSplitText:
+                sentenceLengthSum += len(sentence)
+                
+                sentenceCount += 1
+                
+            avgSentenceLength = ((sentenceLengthSum * 1.0) / sentenceCount)
+            
+            
         return len(text)
 
     
-	def calc_numerals(self, text):
+    def calc_numerals(self, text):
         # lots of possibilities here
         return len(text)
 
     
-	def calc_superlatives(self, text):
+    def calc_superlatives(self, text):
         # perhaps draw from a list, need to make sure -er isn't the only requisite
         return len(text)
 
     
-	def calc_func_word_rate(self, text):
+    def calc_func_word_rate(self, text):
         # function words come from a list? Or parse through them?
-		# Fucntion words come from a text file, which is read in as a string, and forced to lower case,
-		# then each word in text (forced to lower case) is checked for whether it is in the "function word string"
-		exclusionWords = open ("exclusionWords.txt", "r")
-		exclusionString = exclusionWords.read().lower()
-		
-		functionWordCount = 0
-		nonFunctionWordCount = 0
-		
-		textLower = text.lower()
-		
-		for word in textLower:
-		
-			if word in exclusionString:
-				functionWordCount += 1
-				
-			else:
-				nonFunctionWordCount += 1
-			
-		
+        # Fucntion words come from a text file, which is read in as a string, and forced to lower case,
+        # then each word in text (forced to lower case) is checked for whether it is in the "function word string"
+        exclusionWords = open ("exclusionWords.txt", "r")
+        exclusionString = exclusionWords.read().lower()
+        
+        functionWordCount = 0
+        nonFunctionWordCount = 0
+        
+        textLower = text.lower()
+        
+        for word in textLower:
+        
+            if word in exclusionString:
+                functionWordCount += 1
+                
+            else:
+                nonFunctionWordCount += 1
+            
+        
         return len(text)
 
     def calc_deixis(self, text):
@@ -147,8 +148,8 @@ class DataProcessor:
 
     def calc_word_count(self, text):
         # should be easy enough, just count the whitespace delimited character strings
-		
-		splitText = text.split()	
+        
+        splitText = text.split()    
         return len(splitText)
 
     def reload_json(self, json_loader):
