@@ -105,8 +105,30 @@ class DataProcessor:
                 
             avgSentenceLength = ((sentenceLengthSum * 1.0) / sentenceCount)
             
-            
-        return len(text)
+        #Return the summation value discussed in email and class on 12/7/2015
+        #Sum multiNegCount, avgWordLength, and avgSentenceLength
+
+        totalObfuscationSum = multiNegCount + avgWordLength + avgSentenceLength
+
+        #Total Obfuscation Value is the numerical value that represents the category of the above sum (x)
+        #For the above sum (X):
+        #If X <= 11, then obfuscation = 1 = easy to read,
+        #If 11 < X <= 17, then obfuscation = 2 = moderate to read
+        #If 17 < X, then obfuscation = 3 = difficult to read
+
+        totalObfuscationValue = 0
+
+        if totalObfuscationSum <= 11:
+            totalObfuscationValue = 1
+
+        elif (11 < totalObfuscationSum) and (totalObfuscationSum <= 17):
+            totalObfuscationValue = 2
+
+        else:
+            totalObfuscationValue = 3
+
+        #Return the computed obfuscation value
+        return totalObfuscationValue
 
     
     def calc_numerals(self, text):
@@ -138,9 +160,11 @@ class DataProcessor:
                 
             else:
                 nonFunctionWordCount += 1
-            
+
+        #Non Function Proportion is the proportion of words in the review that are NON function words
+        nonFunctionProportion = (nonFunctionWordCount * 1.0)/len(textLower)
         
-        return len(text)
+        return nonFunctionProportion
 
     def calc_deixis(self, text):
         # list? or parsed out?
