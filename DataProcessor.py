@@ -21,7 +21,7 @@ class DataProcessor:
 
         arff_loader = ArffLoader("yelp.arff")
         schema = 'id', 'text', 'stars', 'alpha_ratio', 'punctuation_frequency', \
-                                'obfuscation', 'numerals', 'superlative_comparative', 'function_word_rate', 'deixis',\
+                                'obfuscation', 'numerals', 'function_word_rate', 'deixis',\
                                 'char_count', 'word_count', 'usefulness'
         arff_loader.load_schema(schema)
         for item in self.data:
@@ -39,7 +39,6 @@ class DataProcessor:
         item.punctuation_frequency = self.calc_punct_frequency(item.text)
         item.obfuscation = self.calc_obfuscation(item.text)
         item.numerals = self.calc_numerals(item.text)
-        item.superlative_comparative = self.calc_superlatives(item.text)
         item.function_word_rate = self.calc_func_word_rate(item.text)
         item.deixis = self.calc_deixis(item.text)
         item.char_count = len(item.text)
@@ -138,13 +137,11 @@ class DataProcessor:
 
     
     def calc_numerals(self, text):
-        # lots of possibilities here
-        return len(text)
-
-    
-    def calc_superlatives(self, text):
-        # perhaps draw from a list, need to make sure -er isn't the only requisite
-        return len(text)
+        numerals = 0
+        for word in text:
+            if re.search(".*\d+.*", word):
+                numerals += 1
+        return numerals
 
     
     def calc_func_word_rate(self, text):
@@ -173,8 +170,18 @@ class DataProcessor:
         return nonFunctionProportion
 
     def calc_deixis(self, text):
-        # list? or parsed out?
-        return len(text)
+        deicticWords = open ("deixis.txt", "r+")
+        deicticString = deicticWords.read().lower()
+        deixis = 0
+
+        textLower = text.lower()
+
+        for word in textLower:
+            if word in deicticString:
+                deixis += 1
+
+        #do we want to account for phrases as well??? i.e. next year, last week etc...
+        return deixis
 
     def calc_word_count(self, text):
         splitText = text.split()
