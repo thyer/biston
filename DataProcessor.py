@@ -1,9 +1,11 @@
 from JSONLoader import JSONLoader
+from ArffLoader import ArffLoader
+import re
 
 __author__ = 'Trent'
 
 
-import re
+
 
 class DataProcessor:
     def __init__(self, json_loader=None):
@@ -17,23 +19,32 @@ class DataProcessor:
             self.process(next_review)
             next_review = self.json_loader.get_next_review()
 
+        arff_loader = ArffLoader("yelp.arff")
+        schema = 'id', 'text', 'stars', 'alpha_ratio', 'punctuation_frequency', \
+                                'obfuscation', 'numerals', 'superlative_comparative', 'function_word_rate', 'deixis',\
+                                'char_count', 'word_count', 'usefulness'
+        arff_loader.load_schema(schema)
+        for item in self.data:
+            arff_loader.load_line(item)
+        arff_loader.write_to_file()
+
         print("Done processing, total reviews: " + str(len(self.data)))
 
     def process(self, review):
         item = ReviewItem(review[0])
         item.text = review[1]
         item.stars = review[2]
-        item.usefulness = review[3]
         # TODO: implement all of these methods
         item.alpha_ratio = self.calc_alpha_ratio(item.text)
         item.punctuation_frequency = self.calc_punct_frequency(item.text)
-        # item.obfuscation = self.calc_obfuscation(item.text)
+        item.obfuscation = self.calc_obfuscation(item.text)
         item.numerals = self.calc_numerals(item.text)
         item.superlative_comparative = self.calc_superlatives(item.text)
         item.function_word_rate = self.calc_func_word_rate(item.text)
         item.deixis = self.calc_deixis(item.text)
         item.char_count = len(item.text)
         item.word_count = self.calc_word_count(item.text)
+        item.usefulness = review[3]
         self.data.append(item)
 
     def calc_alpha_ratio(self, text):
@@ -86,53 +97,53 @@ class DataProcessor:
             
         
         
-        # Split the text at the .'s in order to separate into sentences
-        sentenceSplitText = text.split(".")
-        sentenceSplitText = sentenceSplitText.split(";")
-        sentenceSplitText = sentenceSplitText.split(", and ")
-        sententeSplitText = sentenceSplitText.split(", but ")
-        sentenceCount = 1
-        
+        # Separate the text into sentences
+        sentenceSplitText = re.split("\.|!|\?|\n|;|, and|, but", text)
+
         # If sentences exist (i.e. text is NOT empty), then proceed with processing
         if len(sentenceSplitText) > 0:
             
             sentenceLengthSum = 0
+            sentenceCount = 1
             
             for sentence in sentenceSplitText:
-                sentenceLengthSum += len(sentence)
-                
-                sentenceCount += 1
+                if len(sentence)> 0:
+                    sentenceLengthSum += len(sentence)
+                    sentenceCount += 1
                 
             avgSentenceLength = ((sentenceLengthSum * 1.0) / sentenceCount)
             
-            
-        return len(text)
+        #Return the summation value discussed in email and class on 12/7/2015
+
+        totalObfuscationSum = multiNegCount + avgWordLength + avgSentenceLength
+
+        # Total Obfuscation Value is the numerical value that represents the category of the above sum (x)
+        # For the above sum (X):
+        # If X <= 11, then obfuscation = 1 = easy to read,
+        # If 11 < X <= 17, then obfuscation = 2 = moderate to read
+        # If 17 < X, then obfuscation = 3 = difficult to read
+
+        discrete_obfuscation_value = 0
+
+        if totalObfuscationSum <= 11:
+            discrete_obfuscation_value = 1
+
+        elif (11 < totalObfuscationSum) and (totalObfuscationSum <= 17):
+            discrete_obfuscation_value = 2
+
+        else:
+            discrete_obfuscation_value = 3
+
+        return discrete_obfuscation_value
 
     
     def calc_numerals(self, text):
         # lots of possibilities here
-        numerals = 0
-        for word in text:
-            if re.search(".*\d+.*", word):
-                numerals += 1
         return len(text)
 
     
     def calc_superlatives(self, text):
         # perhaps draw from a list, need to make sure -er isn't the only requisite
-        #without tagging for POS or pronunciation it will be difficult to get this just right - I'm going to use a regex looking for everything ending in a Cest or Ciest
-        #I tried looking for C's that we could maybe exclude, but there weren't really any
-        #this will cause problems for some words that end in these, but I don't think there will be too many that will be very common
-
-        textLower = text.lower()
-        for word in textLower:
-            #superlatives
-            if re.search("(.*[b||c||d||f||g||h||j||k||l||m||n||p||q||r||s||t||v||w||x||z]+(est|iest)|(most)|(least)|(worst))", word):
-                superlative_comparative += 1
-            #comparatives
-            elif re.search("(.*[b||c||d||f||g||h||j||k||l||m||n||p||q||r||s||t||v||w||x||z]+(er|ier)|(more)|(less[er]*)|(worse))", word):
-                superlative_comparative += 1
-
         return len(text)
 
     
@@ -155,30 +166,18 @@ class DataProcessor:
                 
             else:
                 nonFunctionWordCount += 1
-            
+
+        #Non Function Proportion is the proportion of words in the review that are NON function words
+        nonFunctionProportion = (nonFunctionWordCount * 1.0)/len(textLower)
         
-        return len(text)
+        return nonFunctionProportion
 
     def calc_deixis(self, text):
         # list? or parsed out?
-        deicticWords = open ("deixix.txt", "r")
-        deicticString = deicticWords.read().lower()
-
-        deixis = 0
-
-        textLower = text.lower()
-
-        for word in textLower:
-            if word in deicticString:
-                deixis += 1
-
-        #do we want to account for phrases as well??? i.e. next year, last week etc...
         return len(text)
 
     def calc_word_count(self, text):
-        # should be easy enough, just count the whitespace delimited character strings
-        
-        splitText = text.split()    
+        splitText = text.split()
         return len(splitText)
 
     def reload_json(self, json_loader):
