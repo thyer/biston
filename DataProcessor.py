@@ -1,25 +1,24 @@
 from JSONLoader import JSONLoader
-from ArffLoader import ArffLoader
+from UsefulnessArffLoader import UsefulnessArffLoader
 import re
 
 __author__ = 'Trent'
 
 
-
-
 class DataProcessor:
     def __init__(self, json_loader=None):
         if json_loader is None:
-            json_loader = JSONLoader("testing.json")
+            json_loader = JSONLoader("random20000.json")
         self.json_loader = json_loader
         self.data = []
+        self.ticker = 0
 
         next_review = self.json_loader.get_next_review()
         while next_review is not None:
             self.process(next_review)
             next_review = self.json_loader.get_next_review()
 
-        arff_loader = ArffLoader("yelp.arff")
+        arff_loader = UsefulnessArffLoader("yelp.arff")
         schema = 'id', 'text', 'stars', 'alpha_ratio', 'punctuation_frequency', \
                                 'obfuscation', 'numerals', 'function_word_rate', 'deixis',\
                                 'char_count', 'word_count', 'usefulness'
@@ -31,6 +30,9 @@ class DataProcessor:
         print("Done processing, total reviews: " + str(len(self.data)))
 
     def process(self, review):
+        self.ticker += 1
+        if self.ticker % 1000 == 0:
+            print(str(self.ticker) + " reviews processed in DataProcessor")
         item = ReviewItem(review[0])
         item.text = review[1]
         item.stars = review[2]
@@ -91,8 +93,10 @@ class DataProcessor:
                 multiNegCount += 1
                     
             index += 1
-            
-        avgWordLength = ((wordLengthSum * 1.0) / len(textWords))
+        if len(textWords) == 0:
+            avgWordLength = 0
+        else:
+            avgWordLength = ((wordLengthSum * 1.0) / len(textWords))
             
         
         
