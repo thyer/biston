@@ -33,6 +33,8 @@ class UsefulnessArffLoader:
             f.write("@attribute " + field)
             if 'id' in field:
                 f.write(" string\n")
+            elif 'usefulness' in field:
+                f.write(" {1, 0}\n")
             else:
                 f.write(" numeric\n")
         f.write("@data\n")

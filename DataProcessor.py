@@ -8,7 +8,7 @@ __author__ = 'Trent'
 class DataProcessor:
     def __init__(self, json_loader=None):
         if json_loader is None:
-            json_loader = JSONLoader("random20000.json")
+            json_loader = JSONLoader("random5000.json")
         self.json_loader = json_loader
         self.data = []
         self.ticker = 0
@@ -18,7 +18,7 @@ class DataProcessor:
             self.process(next_review)
             next_review = self.json_loader.get_next_review()
 
-        arff_loader = UsefulnessArffLoader("yelp.arff")
+        arff_loader = UsefulnessArffLoader("yelp5000.arff")
         schema = 'id', 'text', 'stars', 'alpha_ratio', 'punctuation_frequency', \
                                 'obfuscation', 'numerals', 'function_word_rate', 'deixis',\
                                 'char_count', 'word_count', 'usefulness'
@@ -45,7 +45,11 @@ class DataProcessor:
         item.deixis = self.calc_deixis(item.text)
         item.char_count = len(item.text)
         item.word_count = self.calc_word_count(item.text)
-        item.usefulness = review[3]
+        usefulness = review[3]
+        if usefulness > 2:
+            item.usefulness = 1
+        else:
+            item.usefulness = 0
         self.data.append(item)
 
     def calc_alpha_ratio(self, text):
@@ -137,55 +141,50 @@ class DataProcessor:
         else:
             discrete_obfuscation_value = 3
 
-        return discrete_obfuscation_value
+        return totalObfuscationSum
 
-    
     def calc_numerals(self, text):
         numerals = 0
+        total = 0
         for word in text:
+            total += 1
             if re.search(".*\d+.*", word):
                 numerals += 1
-        return numerals
+        return numerals/total
 
-    
     def calc_func_word_rate(self, text):
-        # function words come from a list? Or parse through them?
-        # Fucntion words come from a text file, which is read in as a string, and forced to lower case,
+        # Function words come from a text file, which is read in as a string, and forced to lower case,
         # then each word in text (forced to lower case) is checked for whether it is in the "function word string"
-        exclusionWords = open ("exclusionWords.txt", "r")
+        exclusionWords = open("exclusionWords.txt", "r")
         exclusionString = exclusionWords.read().lower()
         
         functionWordCount = 0
-        nonFunctionWordCount = 0
-        
+
         textLower = text.lower()
+        textLower = re.split("\.|!|\?|\n|;|,| ", textLower)
+        words = 0
         
         for word in textLower:
-        
+            words += 1
             if word in exclusionString:
                 functionWordCount += 1
-                
-            else:
-                nonFunctionWordCount += 1
-
-        #Non Function Proportion is the proportion of words in the review that are NON function words
-        nonFunctionProportion = (nonFunctionWordCount * 1.0)/len(textLower)
         
-        return nonFunctionProportion
+        return functionWordCount / words
 
     def calc_deixis(self, text):
         deicticWords = open ("deixis.txt", "r+")
         deicticString = deicticWords.read().lower()
         deixis = 0
-
+        words = 0
         textLower = text.lower()
 
         for word in textLower:
+            words+=1
             if word in deicticString:
                 deixis += 1
 
         #do we want to account for phrases as well??? i.e. next year, last week etc...
-        return deixis
+        return deixis/words
 
     def calc_word_count(self, text):
         splitText = text.split()
