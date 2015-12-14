@@ -18,10 +18,10 @@ class DataProcessor:
             self.process(next_review)
             next_review = self.json_loader.get_next_review()
 
-        arff_loader = UsefulnessArffLoader("yelp5000.arff")
+        arff_loader = UsefulnessArffLoader("yelp5000_greater10.arff")
         schema = 'id', 'text', 'stars', 'alpha_ratio', 'punctuation_frequency', \
                                 'obfuscation', 'numerals', 'function_word_rate', 'deixis',\
-                                'char_count', 'word_count', 'usefulness'
+                                'word_count', 'usefulness'
         arff_loader.load_schema(schema)
         for item in self.data:
             arff_loader.load_line(item)
@@ -43,14 +43,15 @@ class DataProcessor:
         item.numerals = self.calc_numerals(item.text)
         item.function_word_rate = self.calc_func_word_rate(item.text)
         item.deixis = self.calc_deixis(item.text)
-        item.char_count = len(item.text)
         item.word_count = self.calc_word_count(item.text)
         usefulness = review[3]
-        if usefulness > 2:
+        if usefulness > 10:
             item.usefulness = 1
         else:
             item.usefulness = 0
         self.data.append(item)
+        if self.ticker == 1:
+            print(review)
 
     def calc_alpha_ratio(self, text):
         alpha = 0
