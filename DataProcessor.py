@@ -7,8 +7,11 @@ __author__ = 'Trent'
 
 class DataProcessor:
     def __init__(self, json_loader=None):
+        self.pivot = 5
+        self.proportional = True
+        self.nominalize_usefulness = True
         if json_loader is None:
-            json_loader = JSONLoader("random5000.json")
+            json_loader = JSONLoader("random20000.json", self.proportional, self.pivot)
         self.json_loader = json_loader
         self.data = []
         self.ticker = 0
@@ -18,7 +21,15 @@ class DataProcessor:
             self.process(next_review)
             next_review = self.json_loader.get_next_review()
 
-        arff_loader = UsefulnessArffLoader("yelp5000_greater10.arff")
+        string_file = "yelp_"
+        if self.proportional:
+            string_file += "prop_pivot" + str(self.pivot) + "_"
+        if self.nominalize_usefulness:
+            string_file += "nom_"
+        else:
+            string_file += "cont_"
+        string_file += str(len(self.data)) + "reviews"
+        arff_loader = UsefulnessArffLoader(string_file)
         schema = 'id', 'text', 'stars', 'alpha_ratio', 'punctuation_frequency', \
                                 'obfuscation', 'numerals', 'function_word_rate', 'deixis',\
                                 'word_count', 'usefulness'
@@ -45,13 +56,14 @@ class DataProcessor:
         item.deixis = self.calc_deixis(item.text)
         item.word_count = self.calc_word_count(item.text)
         usefulness = review[3]
-        if usefulness > 10:
-            item.usefulness = 1
+        if self.nominalize_usefulness:
+            if usefulness >= self.pivot:
+                item.usefulness = 1
+            else:
+                item.usefulness = 0
         else:
-            item.usefulness = 0
+            item.usefulness = usefulness
         self.data.append(item)
-        if self.ticker == 1:
-            print(review)
 
     def calc_alpha_ratio(self, text):
         alpha = 0

@@ -5,9 +5,13 @@ __author__ = 'Trent'
 
 
 class JSONLoader:
-    def __init__(self, filename):
+    def __init__(self, filename, proportional=False, pivot=0):
         self.data = []
         self.currentReview = 0
+        self.proportional = proportional
+        self.pivot_over = 0
+        self.pivot_under = 0
+        self.pivot = pivot
         with open(filename) as file:
             ticker = 0
             self.reviews = []
@@ -20,6 +24,8 @@ class JSONLoader:
                     self.reviews = []
         self.process()
         self.reviews = []
+        if proportional:
+            print("At end of JSON loading, over/under pivot ratio was: " + str(self.pivot_over) + ":" + str(self.pivot_over))
 
     def process(self):
         print("Processing")
@@ -43,8 +49,15 @@ class JSONLoader:
             stars = review['stars']
             useful = review['votes']['useful']
             # need to decide what other information is interesting to us
-
-            self.data.append([id, text, stars, useful])
+            if self.proportional:
+                if useful >= self.pivot:
+                    self.pivot_over += 1
+                    self.data.append([id, text, stars, useful])
+                elif self.pivot_under - self.pivot_over < 5:
+                    self.pivot_under += 1
+                    self.data.append([id, text, stars, useful])
+            else:
+                self.data.append([id, text, stars, useful])
 
     def get_next_review(self):
         if self.currentReview >= len(self.data):
