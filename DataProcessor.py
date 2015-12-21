@@ -11,7 +11,7 @@ class DataProcessor:
         self.proportional = True
         self.nominalize_usefulness = True
         if json_loader is None:
-            json_loader = JSONLoader("random20000.json", self.proportional, self.pivot)
+            json_loader = JSONLoader("random100000.json", self.proportional, self.pivot)
         self.json_loader = json_loader
         self.data = []
         self.ticker = 0
@@ -28,7 +28,7 @@ class DataProcessor:
             string_file += "nom_"
         else:
             string_file += "cont_"
-        string_file += str(len(self.data)) + "reviews"
+        string_file += str(len(self.data)) + "reviews.arff"
         arff_loader = UsefulnessArffLoader(string_file)
         schema = 'id', 'text', 'stars', 'alpha_ratio', 'punctuation_frequency', \
                                 'obfuscation', 'numerals', 'function_word_rate', 'deixis',\

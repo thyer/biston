@@ -7,7 +7,7 @@ class RandomSampleWriter:
     def __init__(self, filename):
         self.filename = filename
         self.data = []
-        self.MAX_REVIEWS = 5000
+        self.MAX_REVIEWS = 100000
         with open(filename) as file:
             for line in file:
                 if random.randint(1,1000) < 50:
