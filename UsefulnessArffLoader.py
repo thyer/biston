@@ -2,7 +2,8 @@ __author__ = 'Trent'
 
 
 class UsefulnessArffLoader:
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, nominalized=False):
+        self.nominalized = nominalized
         self.relation_name = filename.split(".")[0]
         self.schema = None
         self.data = []
@@ -33,7 +34,7 @@ class UsefulnessArffLoader:
             f.write("@attribute " + field)
             if 'id' in field:
                 f.write(" string\n")
-            elif 'usefulness' in field:
+            elif 'usefulness' in field and self.nominalized:
                 f.write(" {1, 0}\n")
             else:
                 f.write(" numeric\n")

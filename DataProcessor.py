@@ -8,10 +8,10 @@ __author__ = 'Trent'
 class DataProcessor:
     def __init__(self, json_loader=None):
         self.pivot = 5
-        self.proportional = True
+        self.proportional = False
         self.nominalize_usefulness = True
         if json_loader is None:
-            json_loader = JSONLoader("random100000.json", self.proportional, self.pivot)
+            json_loader = JSONLoader("random20000.json", self.proportional, self.pivot)
         self.json_loader = json_loader
         self.data = []
         self.ticker = 0
@@ -29,7 +29,7 @@ class DataProcessor:
         else:
             string_file += "cont_"
         string_file += str(len(self.data)) + "reviews.arff"
-        arff_loader = UsefulnessArffLoader(string_file)
+        arff_loader = UsefulnessArffLoader(string_file, self.nominalize_usefulness)
         schema = 'id', 'text', 'stars', 'alpha_ratio', 'punctuation_frequency', \
                                 'obfuscation', 'numerals', 'function_word_rate', 'deixis',\
                                 'word_count', 'usefulness'
